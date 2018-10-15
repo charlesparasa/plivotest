@@ -38,7 +38,7 @@ func InitJwt() {
 	data, err := ioutil.ReadFile(loc)
 	if err != nil {
 		err = fmt.Errorf("impossible to read key form disk pem file, hence exiting application gracefully")
-		fmt.Printf("Error reading the pem file from the disk ignoring")
+		fmt.Println("Error reading the pem file from the disk ignoring")
 		os.Exit(0)
 	}
 	Data = data

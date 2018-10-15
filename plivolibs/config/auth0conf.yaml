@@ -2,5 +2,5 @@
   domain: "https://plivotest.auth0.com"
   client_id: "3tI7KwGonxBOBmkzNWKExAMSiwdzwYIu"
   client_secret: "iEM-7leg30ACDMNXOvlvJcW2ukM144tjaAbb0PAN0Inqskg6rx6KA2T0I-nTNguH"
-  secret_location: "/Users/charlesparasa/Desktop/plivotest.pem"
+  secret_location: "./plivolibs/config/plivotest.pem"
   realm: "realm"
