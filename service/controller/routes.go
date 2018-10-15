@@ -5,8 +5,15 @@ import (
 	"github.com/charlesparasa/plivotest/plivolibs/logger"
 	"github.com/charlesparasa/plivotest/plivolibs/middleware"
 	"net/http"
+	"os"
 )
-const servicePort = "4030"
+
+func getServicePost() string  {
+	if os.Getenv("PORT") == "" {
+		return "4030"
+	}
+	return os.Getenv("PORT")
+}
 
 func Start()  {
 	middleware.AddRoute(
@@ -58,6 +65,6 @@ func Start()  {
 		"/signup",
 		signup)
 
-	logger.GenericInfo(config.TContext{},"Started Contact service" , logger.FieldsMap{"port":servicePort})
-	middleware.Start(servicePort, "/contacts")
+	logger.GenericInfo(config.TContext{},"Started Contact service" , logger.FieldsMap{"port":getServicePost()})
+	middleware.Start(getServicePost(), "/contacts")
 }
