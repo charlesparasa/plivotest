@@ -22,6 +22,19 @@ func Start()  {
 		getContacts)
 
 	middleware.AddRoute(
+		"get Contact By Email",
+		http.MethodGet,
+		"/contact/{email}/email",
+		getContactByEmail)
+
+	middleware.AddRoute(
+		"get Contact By Name",
+		http.MethodGet,
+		"/contacts/{name}/name",
+		getContactByName)
+
+
+	middleware.AddRoute(
 		"Get Contact",
 		http.MethodDelete,
 		"/delete/{email}",

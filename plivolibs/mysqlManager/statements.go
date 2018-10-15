@@ -22,10 +22,11 @@ func init()  {
 	localdb = ldb
 }
 func InsertOne(data interface{})error  {
-	query := fmt.Sprintf("insert into %s (id,name,email,phone) values(?,?,?,?)",plivotable)
+	query := fmt.Sprintf("INSERT INTO %s (name,email,phone) values($1,$2,$3)",plivotable)
+	fmt.Println("query ", query)
 	stmt , prepErr := localdb.Prepare(query)
 	if prepErr != nil {
-		err := fmt.Errorf("Invalid mysql statments", prepErr)
+		err := fmt.Errorf("Invalid sql statments", prepErr)
 		return  err
 	}
 	var c model.Contact
@@ -40,7 +41,7 @@ func InsertOne(data interface{})error  {
 		return err
 	}
 
-	result, execErr := stmt.Exec(c.Id, c.Name,c.Email,c.Phone)
+	result, execErr := stmt.Exec(c.Name,c.Email,c.Phone)
 	if execErr != nil {
 		err := fmt.Errorf("InsertContact: error inserting %+v; err: %v", execErr)
 		return err
@@ -49,7 +50,6 @@ func InsertOne(data interface{})error  {
 	id, lastErr := result.LastInsertId()
 	rows, rowErr := result.RowsAffected()
 	fmt.Printf("result: %v, %v, \n %v, %v\n", id, lastErr, rows, rowErr)
-	defer localdb.Close()
 	return  nil
 }
 
@@ -58,12 +58,12 @@ func GetData(from string , to string )(data interface{}, err error)  {
 	if to == "0" {
 		to = "10"
 	}
-	str := "select * from " + plivotable + " LIMIT " + from + " , " + to
-	query := fmt.Sprintf(str)
+	query := fmt.Sprintf("SELECT * FROM " + plivotable + " OFFSET " + from + " LIMIT " + to)
 	// Execute the query
 	results, err := localdb.Query(query)
 	if err != nil {
-		panic(err.Error()) // proper error handling instead of panic in your app
+		fmt.Println("err", err)
+		panic(err.Error())
 	}
 	 idPtr := new(int)
 	 namePtr := new(string)
@@ -88,10 +88,10 @@ func GetData(from string , to string )(data interface{}, err error)  {
 }
 
 func DeleteContact(email string) error {
-	query := fmt.Sprintf("DELETE FROM "+plivotable+ " WHERE email=?")
+	query := fmt.Sprintf("DELETE FROM "+plivotable+ " WHERE email=$1")
 	stmt , prepErr := localdb.Prepare(query)
 	if prepErr != nil {
-		err := fmt.Errorf("Invalid mysql statments", prepErr)
+		err := fmt.Errorf("Invalid sql statments", prepErr)
 		return  err
 	}
 	result , err := stmt.Exec(email)
@@ -110,10 +110,10 @@ func DeleteContact(email string) error {
 	return nil
 }
 func UpdateContact(contact model.Contact )error  {
-	query := fmt.Sprintf("Update "+plivotable+ " Set  name=?, email=?, phone=? where id=?")
+	query := fmt.Sprintf("Update "+plivotable+ " Set  name=$1, email=$2, phone=$3 where id=$4")
 	stmt , prepErr := localdb.Prepare(query)
 	if prepErr != nil {
-		err := fmt.Errorf("Invalid mysql statments", prepErr)
+		err := fmt.Errorf("Invalid sql statments", prepErr)
 		return  err
 	}
 	result, err := stmt.Exec(contact.Name, contact.Email, contact.Phone, contact.Id)
@@ -131,4 +131,58 @@ func UpdateContact(contact model.Contact )error  {
 	}
 
 	return nil
+}
+
+func GetByEmail(email string) (data interface{}, err error) {
+	query := fmt.Sprintf("SELECT * FROM "+ plivotable+ " WHERE email=$1")
+	results := localdb.QueryRow(query, email)
+	if err != nil {
+		fmt.Println("err", err)
+		panic(err.Error())
+	}
+	idPtr := new(int)
+	namePtr := new(string)
+	emailPtr := new(string)
+	phonePtr := new(string)
+	var c model.Contact
+		scanErr := results.Scan(&idPtr, &namePtr, &emailPtr, &phonePtr)
+		if scanErr != nil {
+			fmt.Println("scanErr",scanErr)
+			return nil, err
+		}
+		c.Id = *idPtr
+		c.Name = *namePtr
+		c.Email = *emailPtr
+		c.Phone = *phonePtr
+
+	return c , nil
+
+}
+
+func GetByEmailName(name string)(data interface{}, err error) {
+	query := fmt.Sprintf("SELECT * FROM "+ plivotable+ " WHERE name=$1")
+	results, err := localdb.Query(query, name)
+	if err != nil {
+		fmt.Println("err", err)
+		panic(err.Error())
+	}
+	idPtr := new(int)
+	namePtr := new(string)
+	emailPtr := new(string)
+	phonePtr := new(string)
+	var c model.Contact
+	var ca []model.Contact
+	for results.Next() {
+		scanErr := results.Scan(&idPtr, &namePtr, &emailPtr, &phonePtr)
+		if scanErr != nil {
+			fmt.Println("scanErr",scanErr)
+			return nil, err
+		}
+		c.Id = *idPtr
+		c.Name = *namePtr
+		c.Email = *emailPtr
+		c.Phone = *phonePtr
+		ca = append(ca, c)
+	}
+	return ca , nil
 }

@@ -4,40 +4,24 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-
-	"github.com/charlesparasa/plivotest/plivolibs/mysqlManager/config"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	"os"
 )
 
 var _db *sql.DB
 
-var (
-	TableNameClientCredential = "plivocredentials"
-)
-
 func initiateSQL() (*sql.DB, error) {
-
-	config.Init()
-	username := config.AppConfig.Mysql.Username
-	password := config.AppConfig.Mysql.Password
-	host := config.AppConfig.Mysql.Host
-	databaseName := config.AppConfig.Mysql.DatabaseName
-	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true", username, password, host, databaseName)
+	dsn := os.Getenv("DATABASE_URL")
 	var openErr error
-	_db, openErr = sql.Open("mysql", dsn)
+	_db, openErr = sql.Open("postgres", dsn)
 	if openErr != nil {
-		err := fmt.Errorf("error initializing mysql DB connection %s; err: %v", host, openErr)
+		err := fmt.Errorf("error initializing mysql DB connection %s; err: %v", openErr)
 		panic(err.Error())
 	}
 
 	pingErr := _db.Ping()
 	if pingErr != nil {
-		maskedPassword := "*********"
-		if len(password) >= 5 {
-			maskedPassword = fmt.Sprintf("%s***%s****", password[0:1], password[4:5])
-		}
-		err := fmt.Errorf("ping test failed on mysql DB connection %s:%s@%s/%s; err:%v", username,
-			maskedPassword, host, databaseName, pingErr)
+		err := fmt.Errorf("ping test failed on mysql DB connection %s:%s@%s/%s; err:%v", dsn, pingErr)
 		panic(err.Error())
 		return nil, err
 	}

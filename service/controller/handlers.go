@@ -43,8 +43,9 @@ func create(w http.ResponseWriter,r *http.Request)  {
 	bytes ,err := json.Marshal(res)
 	if err != nil{
 		fmt.Println("error", err)
-		jsonResponse(w, http.StatusOK, string(bytes))
+		jsonResponse(w, http.StatusInternalServerError, string(bytes))
 	}
+	jsonResponse(w, http.StatusOK, string(bytes))
 }
 
 func getContacts(w http.ResponseWriter,r *http.Request)  {
@@ -82,16 +83,16 @@ func getContacts(w http.ResponseWriter,r *http.Request)  {
 	jsonResponse(w, http.StatusOK,string(contactBytes))
 }
 
-func deleteContact(w http.ResponseWriter,r *http.Request)  {
+func getContactByEmail(w http.ResponseWriter,r *http.Request)  {
 	var res = struct {
 		Message string `json:"message"`
 	}{
-		Message: "Contact Deleted",
+		Message: "Contact Updated",
 	}
 	email := mux.Vars(r)["email"]
-	err := mysqlManager.DeleteContact(email)
+	contactData, err := mysqlManager.GetByEmail(email)
 	if err != nil {
-		fmt.Println("Unable to delete")
+		fmt.Println("error", err)
 		res.Message = err.Error()
 		bytes ,err := json.Marshal(res)
 		if err != nil{
@@ -101,9 +102,93 @@ func deleteContact(w http.ResponseWriter,r *http.Request)  {
 		jsonResponse(w, http.StatusBadRequest, string(bytes))
 		return
 	}
+
+	contactBytes , err := json.Marshal(contactData)
+	if err != nil {
+		fmt.Println("error", err)
+		return
+	}
+	var contacts model.Contact
+	err = json.Unmarshal(contactBytes ,&contacts)
+	if err != nil {
+		fmt.Println("error" , err)
+		return
+	}
+	jsonResponse(w, http.StatusOK,string(contactBytes))
+}
+
+func getContactByName(w http.ResponseWriter,r *http.Request)  {
+	var res = struct {
+		Message string `json:"message"`
+	}{
+		Message: "Contact Updated",
+	}
+	name := mux.Vars(r)["name"]
+	contactData, err := mysqlManager.GetByEmailName(name)
+	if err != nil {
+		fmt.Println("error", err)
+		res.Message = err.Error()
+		bytes ,err := json.Marshal(res)
+		if err != nil{
+			fmt.Println("error", err)
+			return
+		}
+		jsonResponse(w, http.StatusBadRequest, string(bytes))
+		return
+	}
+
+	contactBytes , err := json.Marshal(contactData)
+	if err != nil {
+		fmt.Println("error", err)
+		return
+	}
+
+	var contacts []model.Contact
+	err = json.Unmarshal(contactBytes ,&contacts)
+	if err != nil {
+		fmt.Println("error" , err)
+		jsonResponse(w, http.StatusInternalServerError,string(contactBytes))
+		return
+	}
+	if contacts == nil {
+		res.Message = "Contact not found"
+
+	}
+	jsonResponse(w, http.StatusOK,string(contactBytes))
+}
+
+func deleteContact(w http.ResponseWriter,r *http.Request)  {
+	var res = struct {
+		Message string `json:"message"`
+	}{
+		Message: "Contact Deleted",
+	}
+	email := mux.Vars(r)["email"]
+	err := mysqlManager.DeleteContact(email)
+	if err != nil {
+		res.Message = err.Error()
+		bytes ,err := json.Marshal(res)
+		if err != nil{
+			res.Message = err.Error()
+			bytes ,err := json.Marshal(res)
+			if err != nil{
+				return
+			}
+			jsonResponse(w, http.StatusBadRequest, string(bytes))
+			return
+		}
+		jsonResponse(w, http.StatusBadRequest, string(bytes))
+		return
+	}
 	bytes ,err := json.Marshal(res)
 	if err != nil{
-		fmt.Println("error", err)
+		res.Message = err.Error()
+		bytes ,err := json.Marshal(res)
+		if err != nil{
+			fmt.Println("error marshalling in deleteContact", err)
+			return
+		}
+		jsonResponse(w, http.StatusBadRequest, string(bytes))
 		return
 	}
 	jsonResponse(w, http.StatusOK, string(bytes))
