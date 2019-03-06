@@ -16,43 +16,6 @@ func getServicePost() string  {
 }
 
 func Start()  {
-	middleware.AddRoute(
-		"Create Contact",
-		http.MethodPost,
-		"/create",
-		create)
-
-	middleware.AddRoute(
-		"Get Contact",
-		http.MethodGet,
-		"/getContacts/{from}/{to}",
-		getContacts)
-
-	middleware.AddRoute(
-		"get Contact By Email",
-		http.MethodGet,
-		"/contact/{email}/email",
-		getContactByEmail)
-
-	middleware.AddRoute(
-		"get Contact By Name",
-		http.MethodGet,
-		"/contacts/{name}/name",
-		getContactByName)
-
-
-	middleware.AddRoute(
-		"Get Contact",
-		http.MethodDelete,
-		"/delete/{email}",
-		deleteContact)
-
-	middleware.AddRoute(
-		"Get Contact",
-		http.MethodPatch,
-		"/update",
-		updateContact)
-
 	middleware.AddNoAuthRoutes(
 		"login",
 		http.MethodPost,
@@ -65,6 +28,12 @@ func Start()  {
 		"/signup",
 		signup)
 
+		middleware.AddNoAuthRoutes(
+			"hello",
+			http.MethodGet,
+			"hello",
+			hello)
+
 	logger.GenericInfo(config.TContext{},"Started Contact service" , logger.FieldsMap{"port":getServicePost()})
-	middleware.Start(getServicePost(), "/contacts")
+	middleware.Start(getServicePost(), "/spike")
 }

@@ -1,6 +1,6 @@
 
-  domain: "https://plivotest.auth0.com"
-  client_id: "3tI7KwGonxBOBmkzNWKExAMSiwdzwYIu"
-  client_secret: "iEM-7leg30ACDMNXOvlvJcW2ukM144tjaAbb0PAN0Inqskg6rx6KA2T0I-nTNguH"
+  domain: "https://adessaspikes.auth0.com"
+  client_id: "D4k11oxbtkaOnCk7NFadCCI4B9J9cgO6"
+  client_secret: "AZl_mQnJosF1jD89rziYee4t1rVsjL6a0CMCB4P0G3PBg0hDX1OYfCSElovpG3oN"
   secret_location: "./plivolibs/config/plivotest.pem"
   realm: "realm"
